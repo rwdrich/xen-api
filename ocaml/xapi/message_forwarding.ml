@@ -3175,15 +3175,15 @@ module Forward = functor(Local: Custom_actions.CUSTOM_ACTIONS) -> struct
         with _ -> raise Not_found in
       do_op_on ~local_fn ~__context ~host op
 
-    let set_virtual_allocation ~__context ~self ~value =
+    let set_virtual_allocation ~__context ~self ~value ~hide_from_docs:true =
       Sm.assert_session_has_internal_sr_access ~__context ~sr:self;
       Local.SR.set_virtual_allocation ~__context ~self ~value
 
-    let set_physical_size ~__context ~self ~value =
+    let set_physical_size ~__context ~self ~value ~hide_from_docs:true =
       Sm.assert_session_has_internal_sr_access ~__context ~sr:self;
       Local.SR.set_physical_size ~__context ~self ~value
 
-    let set_physical_utilisation ~__context ~self ~value =
+    let set_physical_utilisation ~__context ~self ~value ~hide_from_docs:true =
       Sm.assert_session_has_internal_sr_access ~__context ~sr:self;
       Local.SR.set_physical_utilisation ~__context ~self ~value
 
@@ -3374,52 +3374,52 @@ module Forward = functor(Local: Custom_actions.CUSTOM_ACTIONS) -> struct
 
     (* -------------------------------------------------------------------------- *)
 
-    let set_sharable ~__context ~self ~value =
+    let set_sharable ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_sharable ~__context ~self ~value
 
-    let set_managed ~__context ~self ~value =
+    let set_managed ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_managed ~__context ~self ~value
 
-    let set_read_only ~__context ~self ~value =
+    let set_read_only ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_read_only ~__context ~self ~value
 
-    let set_missing ~__context ~self ~value =
+    let set_missing ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_missing ~__context ~self ~value
 
-    let set_virtual_size ~__context ~self ~value =
+    let set_virtual_size ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_virtual_size ~__context ~self ~value
 
-    let set_physical_utilisation ~__context ~self ~value =
+    let set_physical_utilisation ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_physical_utilisation ~__context ~self ~value
 
-    let set_is_a_snapshot ~__context ~self ~value =
+    let set_is_a_snapshot ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_is_a_snapshot ~__context ~self ~value
 
-    let set_snapshot_of ~__context ~self ~value =
+    let set_snapshot_of ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_snapshot_of ~__context ~self ~value
 
-    let set_snapshot_time ~__context ~self ~value =
+    let set_snapshot_time ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_snapshot_time ~__context ~self ~value
 
-    let set_metadata_of_pool ~__context ~self ~value =
+    let set_metadata_of_pool ~__context ~self ~value ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.set_metadata_of_pool ~__context ~self ~value
@@ -3477,12 +3477,12 @@ module Forward = functor(Local: Custom_actions.CUSTOM_ACTIONS) -> struct
     let pool_introduce = Local.VDI.pool_introduce
 
     (* Called from the SM backend *)
-    let db_introduce ~__context ~uuid ~name_label ~name_description ~sR ~_type ~sharable ~read_only ~other_config ~location ~xenstore_data ~sm_config  ~managed ~virtual_size ~physical_utilisation ~metadata_of_pool ~is_a_snapshot ~snapshot_time ~snapshot_of ~cbt_enabled =
+    let db_introduce ~__context ~uuid ~name_label ~name_description ~sR ~_type ~sharable ~read_only ~other_config ~location ~xenstore_data ~sm_config  ~managed ~virtual_size ~physical_utilisation ~metadata_of_pool ~is_a_snapshot ~snapshot_time ~snapshot_of ~cbt_enabled ~hide_from_docs:true =
       Sm.assert_session_has_internal_sr_access ~__context ~sr:sR;
       Local.VDI.db_introduce ~__context ~uuid ~name_label ~name_description ~sR ~_type ~sharable ~read_only ~other_config ~location ~xenstore_data ~sm_config  ~managed ~virtual_size ~physical_utilisation ~metadata_of_pool ~is_a_snapshot ~snapshot_time ~snapshot_of ~cbt_enabled
 
     (* Called from the SM backend *)
-    let db_forget ~__context ~vdi =
+    let db_forget ~__context ~vdi ~hide_from_docs:true =
       let sr = Db.VDI.get_SR ~__context ~self:vdi in
       Sm.assert_session_has_internal_sr_access ~__context ~sr;
       Local.VDI.db_forget ~__context ~vdi
