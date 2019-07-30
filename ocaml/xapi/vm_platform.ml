@@ -66,6 +66,7 @@ let featureset = "featureset"
 let nested_virt = "nested-virt"
 
 let vcpu_unrestricted = "vcpu-unrestricted"
+let policy = Xapi_globs.cpu_info_policy_key
 
 (* The default value of device model should be set as
    'qemu-trad', 'qemu-upstream-compat', 'qemu-upstream' according to QEMU-upstream feature release stages *)

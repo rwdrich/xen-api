@@ -35,15 +35,7 @@ val extend : int64 array -> int64 array -> int64 array
 
 val zero_extend : int64 array -> int -> int64 array
 
-val intersect : int64 array -> int64 array -> int64 array
-
-val diff : int64 array -> int64 array -> int64 array
-
-val is_equal : int64 array -> int64 array -> bool
-
-val is_subset : int64 array -> int64 array -> bool
-
-val is_strict_subset : int64 array -> int64 array -> bool
+val intersect : __context:Context.t -> string -> string -> string * bool * string option
 
 val vendor : string Map_check.field
 
@@ -60,6 +52,8 @@ val features_hvm : int64 array Map_check.field
 val features_pv_host : int64 array Map_check.field
 
 val features_hvm_host : int64 array Map_check.field
+val policy_pv : string Map_check.field
+val policy_hvm : string Map_check.field
 
 val get_host_cpu_info :
      __context:Context.t
