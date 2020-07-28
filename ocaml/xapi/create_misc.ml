@@ -596,7 +596,6 @@ let create_host_cpu ~__context host_info =
   | None ->
       warn "Failed to get host CPU info; not updating database"
   | Some cpu_info ->
-<<<<<<< HEAD
       let cpu =
         [
           ("cpu_count", string_of_int cpu_info.cpu_count)
@@ -620,6 +619,8 @@ let create_host_cpu ~__context host_info =
           , Cpuid_helpers.string_of_features cpu_info.features_hvm_host )
         ; ( Xapi_globs.cpu_info_features_pv_host_key
           , Cpuid_helpers.string_of_features cpu_info.features_pv_host )
+        ; ( "policy_pv", cpu_info.policy_pv )
+        ; ( "policy_hvm", cpuinfo.policy_hvm )
         ]
       in
       let host = Helpers.get_localhost ~__context in
@@ -627,39 +628,37 @@ let create_host_cpu ~__context host_info =
       debug
         "create_host_cpuinfo: setting host cpuinfo: socket_count=%d, \
          cpu_count=%d, features_hvm=%s, features_pv=%s, features_hvm_host=%s, \
-         features_pv_host=%s"
+         features_pv_host=%s, policy_hvm=%s, policy_pv=%s"
         (Map_check.getf Cpuid_helpers.socket_count cpu)
         (Map_check.getf Cpuid_helpers.cpu_count cpu)
         (Map_check.getf Cpuid_helpers.features_hvm cpu |> string_of_features)
         (Map_check.getf Cpuid_helpers.features_pv cpu |> string_of_features)
-        (Map_check.getf Cpuid_helpers.features_hvm_host cpu
-        |> string_of_features
-        )
-        (Map_check.getf Cpuid_helpers.features_pv_host cpu |> string_of_features) ;
+        (Map_check.getf Cpuid_helpers.features_hvm_host cpu |> string_of_features)
+        (Map_check.getf Cpuid_helpers.features_pv_host cpu |> string_of_features)
+        (Map_check.getf Cpuid_helpers.policy_pv cpu)
+        (Map_check.getf Cpuid_helpers.policy_hvm cpu) ;
       Db.Host.set_cpu_info ~__context ~self:host ~value:cpu ;
-      let before = getf ~default:[||] features_hvm old_cpu_info in
-      let after = cpu_info.features_hvm in
-      if (not (is_equal before after)) && before <> [||] then (
-        let lost = is_strict_subset (intersect before after) before in
-        let gained = is_strict_subset (intersect before after) after in
-        info
-          "The CPU features of this host have changed.%s%s Old features_hvm=%s."
-          (if lost then " Some features have gone away." else "")
-          (if gained then " Some features were added." else "")
-          (string_of_features before) ;
-        if (not (Helpers.rolling_upgrade_in_progress ~__context)) && lost then
-          let name, priority = Api_messages.host_cpu_features_down in
+      (* RWD Unsure what to do here. Can the toolstack know that features have gone? *)
+      let before = getf ~default:"" policy_hvm old_cpu_info in
+      let after  = cpu_info.policy_hvm in
+
+      if not (before = after) && before <> "" then begin
+        let (intersection_policy, _, _)           = intersect ~__context before after in
+        let (lost, lost_eq, lost_reason)          = intersect ~__context intersection_policy after in
+        let (gained, gained_eq, gained_reason)    = intersect ~__context before intersection_policy in
+        info "The CPU policy of this host have changed.%s%s Old features_hvm=%s."
+          (if not (lost = intersection_policy) then " Some features have gone away." else "")
+          (if not (gained = intersection_policy) then " Some features were added." else "")
+          (before);
+
+        if not (Helpers.rolling_upgrade_in_progress ~__context) && not (lost = intersection_policy) then
+          let (name, priority) = Api_messages.host_cpu_features_down in
           let obj_uuid = Db.Host.get_uuid ~__context ~self:host in
-          let body =
-            Printf.sprintf
-              "The CPU features of this host have changed. Some features have \
-               gone away."
-          in
+          let body = Printf.sprintf "The CPU features of this host have changed. Some features have gone away." in
           Helpers.call_api_functions ~__context (fun rpc session_id ->
-              ignore
-                (XenAPI.Message.create rpc session_id name priority `Host
-                   obj_uuid body))
-      ) ;
+              ignore (XenAPI.Message.create rpc session_id name priority `Host obj_uuid body)
+            )
+      end;
       (* Recreate all Host_cpu objects *)
 
       (* Not all /proc/cpuinfo files contain MHz information. *)
@@ -685,84 +684,6 @@ let create_host_cpu ~__context host_info =
              ~stepping:cpu_info.stepping ~model ~family ~features:""
              ~other_config:[])
       done
-=======
-    let cpu = [
-      "cpu_count", string_of_int cpu_info.cpu_count;
-      "socket_count", string_of_int cpu_info.socket_count;
-      "vendor", cpu_info.vendor;
-      "speed", cpu_info.speed;
-      "modelname", cpu_info.modelname;
-      "family", cpu_info.family;
-      "model", cpu_info.model;
-      "stepping", cpu_info.stepping;
-      "flags", cpu_info.flags;
-      (* To support VMs migrated from hosts which do not support CPU levelling v2,
-         set the "features" key to what it would be on such hosts. *)
-      "features", Cpuid_helpers.string_of_features cpu_info.features_oldstyle;
-      Xapi_globs.cpu_info_features_pv_key, Cpuid_helpers.string_of_features cpu_info.features_pv;
-      Xapi_globs.cpu_info_features_hvm_key, Cpuid_helpers.string_of_features cpu_info.features_hvm;
-      Xapi_globs.cpu_info_features_hvm_host_key, Cpuid_helpers.string_of_features cpu_info.features_hvm_host;
-      Xapi_globs.cpu_info_features_pv_host_key, Cpuid_helpers.string_of_features cpu_info.features_pv_host;
-      "policy_pv", cpu_info.policy_pv;
-      "policy_hvm", cpu_info.policy_hvm;
-    ] in
-    let host = Helpers.get_localhost ~__context in
-    let old_cpu_info = Db.Host.get_cpu_info ~__context ~self:host in
-    debug "create_host_cpuinfo: setting host cpuinfo: socket_count=%d, cpu_count=%d, features_hvm=%s, features_pv=%s, features_hvm_host=%s, features_pv_host=%s, policy_hvm=%s, policy_pv=%s"
-      (Map_check.getf Cpuid_helpers.socket_count cpu)
-      (Map_check.getf Cpuid_helpers.cpu_count cpu)
-      (Map_check.getf Cpuid_helpers.features_hvm cpu |> string_of_features)
-      (Map_check.getf Cpuid_helpers.features_pv cpu |> string_of_features)
-      (Map_check.getf Cpuid_helpers.features_hvm_host cpu |> string_of_features)
-      (Map_check.getf Cpuid_helpers.features_pv_host cpu |> string_of_features)
-      (Map_check.getf Cpuid_helpers.policy_pv cpu)
-      (Map_check.getf Cpuid_helpers.policy_hvm cpu);
-    Db.Host.set_cpu_info ~__context ~self:host ~value:cpu;
-
-    (* Unsure what to do here. Can the toolstack know that features have gone? *)
-    let before = getf ~default:"" policy_hvm old_cpu_info in
-    let after  = cpu_info.policy_hvm in
-
-    if not (before = after) && before <> "" then begin
-      let (intersection_policy, _, _)           = intersect ~__context before after in
-      let (lost, lost_eq, lost_reason)          = intersect ~__context intersection_policy after in
-      let (gained, gained_eq, gained_reason)    = intersect ~__context before intersection_policy in
-      info "The CPU policy of this host have changed.%s%s Old features_hvm=%s."
-        (if not (lost = intersection_policy) then " Some features have gone away." else "")
-        (if not (gained = intersection_policy) then " Some features were added." else "")
-        (before);
-
-      if not (Helpers.rolling_upgrade_in_progress ~__context) && not (lost = intersection_policy) then
-        let (name, priority) = Api_messages.host_cpu_features_down in
-        let obj_uuid = Db.Host.get_uuid ~__context ~self:host in
-        let body = Printf.sprintf "The CPU features of this host have changed. Some features have gone away." in
-        Helpers.call_api_functions ~__context (fun rpc session_id ->
-            ignore (XenAPI.Message.create rpc session_id name priority `Host obj_uuid body)
-          )
-    end;
-
-    (* Recreate all Host_cpu objects *)
-
-    (* Not all /proc/cpuinfo files contain MHz information. *)
-    let speed = try Int64.of_float (float_of_string cpu_info.speed) with _ -> 0L in
-    let model = try Int64.of_string cpu_info.model with _ -> 0L in
-    let family = try Int64.of_string cpu_info.family with _ -> 0L in
-
-    (* Recreate all Host_cpu objects *)
-    let host_cpus = List.filter (fun (_, s) -> s.API.host_cpu_host = host) (Db.Host_cpu.get_all_records ~__context) in
-    List.iter (fun (r, _) -> Db.Host_cpu.destroy ~__context ~self:r) host_cpus;
-    for i = 0 to cpu_info.cpu_count - 1
-    do
-      let uuid = Uuid.to_string (Uuid.make_uuid ())
-      and ref = Ref.make () in
-      debug "Creating CPU %d: %s" i uuid;
-      ignore (Db.Host_cpu.create ~__context ~ref ~uuid ~host ~number:(Int64.of_int i)
-                ~vendor:cpu_info.vendor ~speed ~modelname:cpu_info.modelname
-                ~utilisation:0. ~flags:cpu_info.flags ~stepping:cpu_info.stepping ~model ~family
-                ~features:"" ~other_config:[])
-    done
-
->>>>>>> 97a136e53... MSR Policy Work
 
 let create_pool_cpuinfo ~__context =
   let open Map_check in
@@ -852,6 +773,7 @@ let create_pool_cpuinfo ~__context =
           ignore
             (XenAPI.Message.create rpc session_id name priority `Pool obj_uuid
                body))
+  end
 
 
 let create_chipset_info ~__context host_info =

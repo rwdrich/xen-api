@@ -198,7 +198,7 @@ let assert_vm_is_compatible ~__context ~vm ~host ?remote () =
           vm_cpu_vendor host_cpu_vendor ;
         if vm_cpu_vendor <> host_cpu_vendor then
           fail "VM last booted on a host which had a CPU from a different vendor."
-      end;
+      );
       if List.mem_assoc cpu_info_policy_key vm_cpu_info then begin
         let open Xapi_xenops_queue in
         let module Client = (val make_client (default_xenopsd ()): XENOPS) in
@@ -217,4 +217,4 @@ let assert_vm_is_compatible ~__context ~vm ~host ?remote () =
       end
     with Not_found ->
       debug "Host does not have new levelling policy keys - not comparing VM's flags"
-  end
+

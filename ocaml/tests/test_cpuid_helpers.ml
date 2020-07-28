@@ -171,7 +171,7 @@ module ZeroExtend = Generic.MakeStateless (struct
       ([| 1L; 2L |], 1), [| 1L |];
       ([| 1L; 2L |], 2), [| 1L; 2L |];
     ]
-  end)
+end)
 
 
 module Accessors = Generic.MakeStateless (struct
@@ -206,7 +206,7 @@ module Accessors = Generic.MakeStateless (struct
        "polivy_hvm", ""],
       ("Amd", 6, 24, [| 1L |], [| |], "", "");
     ]
-  end)
+end)
 
 module Setters = Generic.MakeStateless (struct
     module Io = struct
@@ -245,46 +245,6 @@ module Setters = Generic.MakeStateless (struct
                          "policy_pv", "";
                          "policy_hvm", ""]
     ]
-  end)
-
-    let string_of_input_t =
-      Test_printers.(tuple5 string int int (array int64) (array int64))
-
-    let string_of_output_t = Test_printers.(assoc_list string string)
-  end
-
-  let transform (name, sockets, cpus, pv, hvm) =
-    let open Map_check in
-    []
-    |> setf vendor name
-    |> setf socket_count sockets
-    |> setf cpu_count cpus
-    |> setf features_pv pv
-    |> setf features_hvm hvm
-    |> List.sort compare
-
-  let tests =
-    `QuickAndAutoDocumented
-      [
-        ( ("Intel", 1, 1, [|1L; 2L; 3L|], [|0xaL; 0xbL; 0xcL|])
-        , List.sort compare
-            [
-              ("vendor", "Intel")
-            ; ("socket_count", "1")
-            ; ("cpu_count", "1")
-            ; ("features_pv", "00000001-00000002-00000003")
-            ; ("features_hvm", "0000000a-0000000b-0000000c")
-            ] )
-      ; ( ("Amd", 6, 24, [|1L|], [||])
-        , List.sort compare
-            [
-              ("vendor", "Amd")
-            ; ("socket_count", "6")
-            ; ("cpu_count", "24")
-            ; ("features_pv", "00000001")
-            ; ("features_hvm", "")
-            ] )
-      ]
 end)
 
 module Modifiers = Generic.MakeStateless (struct
@@ -324,41 +284,6 @@ module Modifiers = Generic.MakeStateless (struct
        "vendor", "Intel"];
     ]
   end)
-
-    let string_of_input_t = Test_printers.(assoc_list string string)
-
-    let string_of_output_t = Test_printers.(assoc_list string string)
-  end
-
-  let transform record =
-    let open Map_check in
-    record
-    |> setf vendor (getf vendor record)
-    |> setf socket_count (getf socket_count record)
-    |> setf cpu_count (getf cpu_count record)
-    |> setf features_pv (getf features_pv record)
-    |> setf features_hvm (getf features_hvm record)
-    |> List.sort compare
-
-  let tests =
-    `QuickAndAutoDocumented
-      [
-        ( [
-            ("cpu_count", "1")
-          ; ("features_hvm", "0000000a-0000000b-0000000c")
-          ; ("features_pv", "00000001-00000002-00000003")
-          ; ("socket_count", "1")
-          ; ("vendor", "Intel")
-          ]
-        , [
-            ("cpu_count", "1")
-          ; ("features_hvm", "0000000a-0000000b-0000000c")
-          ; ("features_pv", "00000001-00000002-00000003")
-          ; ("socket_count", "1")
-          ; ("vendor", "Intel")
-          ] )
-      ]
-end)
 
 let domain_type : API.domain_type Test_printers.printer =
   Record_util.domain_type_to_string
