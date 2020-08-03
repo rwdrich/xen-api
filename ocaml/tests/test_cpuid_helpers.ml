@@ -345,9 +345,9 @@ module ResetCPUFlags = Generic.MakeStateful (struct
   ]
 end)
 
-let string_of_unit_result =
+(*let string_of_unit_result =
   Fmt.(str "%a" Dump.(result ~ok:(any "()") ~error:exn))
-
+*)
 let tests =
   make_suite "cpuid_helpers_"
   [

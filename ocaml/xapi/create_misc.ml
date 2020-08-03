@@ -620,7 +620,7 @@ let create_host_cpu ~__context host_info =
         ; ( Xapi_globs.cpu_info_features_pv_host_key
           , Cpuid_helpers.string_of_features cpu_info.features_pv_host )
         ; ( "policy_pv", cpu_info.policy_pv )
-        ; ( "policy_hvm", cpuinfo.policy_hvm )
+        ; ( "policy_hvm", cpu_info.policy_hvm )
         ]
       in
       let host = Helpers.get_localhost ~__context in
@@ -693,7 +693,7 @@ let create_pool_cpuinfo ~__context =
       (fun (r, s) -> (r, s.API.host_cpu_info))
       (Db.Host.get_all_records ~__context)
   in
-  let getfdefault ~defaultf key host =
+  let _getfdefault ~defaultf key host =
     let default = getf defaultf host in
     getf ~default key host
   in

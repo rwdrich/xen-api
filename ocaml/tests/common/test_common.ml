@@ -55,6 +55,8 @@ let default_cpu_info =
   ; ("features", "")
   ; ("features_pv", "")
   ; ("features_hvm", "")
+  ; ("policy_pv", "")
+  ; ("policy_hvm", "")
   ]
 
 let make_localhost ~__context ?(features = Features.all_features) () =
@@ -91,6 +93,8 @@ let make_localhost ~__context ?(features = Features.all_features) () =
           ; features_oldstyle= [||]
           ; features_pv_host= [||]
           ; features_hvm_host= [||]
+          ; policy_pv= ""
+          ; policy_hvm= ""
           }
     ; hypervisor= None
     ; chipset_info= None
