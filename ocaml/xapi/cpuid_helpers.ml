@@ -97,7 +97,7 @@ let upgrade_policy ~__context ~vm vm_policy =
   in
   let upgraded_policy = Client.HOST.upgrade_cpu_policy dbg vm_policy uses_hvm_features in
   if upgraded_policy <> vm_policy then begin
-    debug "VM featureset upgraded from %s to %s"
+    debug "VM policy upgraded from %s to %s"
       (vm_policy)
       (upgraded_policy);
   end;
@@ -132,8 +132,9 @@ let upgrade_features ~__context ~vm host_features vm_features =
 
 let set_flags ~__context self vendor policy =
   let value =
-    [(cpu_info_vendor_key, vendor); (cpu_info_policy_key, policy)]
+    [(cpu_info_vendor_key, vendor); (cpu_info_policy_pv_key, policy); (cpu_info_policy_hvm_key, policy)]
   in
+  debug "VM's policy key is: %s" cpu_info_policy_pv_key ;
   debug "VM's CPU policy set to: %s" policy ;
 
   Db.VM.set_last_boot_CPU_flags ~__context ~self ~value
@@ -154,7 +155,10 @@ let update_cpu_flags ~__context ~vm ~host =
   let current_policy =
     let flags = Db.VM.get_last_boot_CPU_flags ~__context ~self:vm in
     try
-      List.assoc cpu_info_policy_key flags
+      List.assoc cpu_info_policy_hvm_key flags
+    with Not_found ->
+    try
+      List.assoc cpu_info_policy_pv_key flags
     with Not_found -> ""
   in
   debug "VM last boot CPU policy: %s" current_policy;
@@ -199,11 +203,11 @@ let assert_vm_is_compatible ~__context ~vm ~host ?remote () =
         if vm_cpu_vendor <> host_cpu_vendor then
           fail "VM last booted on a host which had a CPU from a different vendor."
       );
-      if List.mem_assoc cpu_info_policy_key vm_cpu_info then begin
+      if List.mem_assoc cpu_info_policy_pv_key vm_cpu_info then begin
         let open Xapi_xenops_queue in
         let module Client = (val make_client (default_xenopsd ()): XENOPS) in
         (* Check the VM was last booted on a CPU whose policy are a subset of the policy of this host's CPU. *)
-        let vm_cpu_policy = List.assoc cpu_info_policy_key vm_cpu_info in
+        let vm_cpu_policy = List.assoc cpu_info_policy_pv_key vm_cpu_info in
         debug "VM last booted on CPU with policy %s; host CPUs have policy %s" vm_cpu_policy host_cpu_policy;
         let vm_cpu_policy = upgrade_policy ~__context ~vm vm_cpu_policy in
         let (_compatible_policy, compatibility, reason) = Client.HOST.policy_is_compatible (Context.string_of_task __context) vm_cpu_policy host_cpu_policy in
@@ -215,6 +219,23 @@ let assert_vm_is_compatible ~__context ~vm ~host ?remote () =
           fail "VM last booted on a CPU with policy this host's CPU does not have."
         end
       end
+      else
+        begin
+          let open Xapi_xenops_queue in
+          let module Client = (val make_client (default_xenopsd ()): XENOPS) in
+          (* Check the VM was last booted on a CPU whose policy are a subset of the policy of this host's CPU. *)
+          let vm_cpu_policy = List.assoc cpu_info_policy_hvm_key vm_cpu_info in
+          debug "VM last booted on CPU with policy %s; host CPUs have policy %s" vm_cpu_policy host_cpu_policy;
+          let vm_cpu_policy = upgrade_policy ~__context ~vm vm_cpu_policy in
+          let (_compatible_policy, compatibility, reason) = Client.HOST.policy_is_compatible (Context.string_of_task __context) vm_cpu_policy host_cpu_policy in
+          if not compatibility then begin
+            debug "VM CPU policy (%s) are not compatible with host CPU policy (%s)\n" vm_cpu_policy host_cpu_policy;
+            match reason with
+            | Some r -> debug "Reason: %s\n" r;
+            | None -> debug "Xen didn't give a reason\n";
+              fail "VM last booted on a CPU with policy this host's CPU does not have."
+          end
+        end
     with Not_found ->
       debug "Host does not have new levelling policy keys - not comparing VM's flags"
 

@@ -66,7 +66,8 @@ let featureset = "featureset"
 let nested_virt = "nested-virt"
 
 let vcpu_unrestricted = "vcpu-unrestricted"
-let policy = Xapi_globs.cpu_info_policy_key
+let policy_pv = "policy_pv"
+let policy_hvm = "policy_hvm"
 
 (* The default value of device model should be set as
    'qemu-trad', 'qemu-upstream-compat', 'qemu-upstream' according to QEMU-upstream feature release stages *)
@@ -109,6 +110,8 @@ let filtered_flags =
   ; featureset
   ; nested_virt
   ; vcpu_unrestricted
+  ; policy_pv
+  ; policy_hvm
   ]
 
 (* Other keys we might want to write to the platform map. *)

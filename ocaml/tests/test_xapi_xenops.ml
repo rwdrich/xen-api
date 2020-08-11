@@ -88,6 +88,8 @@ let test_xapi_restart_inner () =
     [
       (Xapi_globs.cpu_info_vendor_key, "AuthenticAMD")
     ; (Xapi_globs.cpu_info_features_key, "deadbeef-deadbeef")
+    ; (Xapi_globs.cpu_info_policy_hvm_key, "some-hvm-policy-here")
+    ; (Xapi_globs.cpu_info_policy_pv_key, "some-pv-policy")
     ]
   in
   let add_flags vm =

@@ -330,7 +330,7 @@ module ResetCPUFlags = Generic.MakeStateful (struct
     let get_flags (label, _) =
       let self = List.hd (Db.VM.get_by_name_label ~__context ~label) in
       let flags = Db.VM.get_last_boot_CPU_flags ~__context ~self in
-      try List.assoc Xapi_globs.cpu_info_policy_key flags
+      try List.assoc Xapi_globs.cpu_info_policy_pv_key flags
       with Not_found -> "Policy Not found"
     in List.map get_flags vms
 

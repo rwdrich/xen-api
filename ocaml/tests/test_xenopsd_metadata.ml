@@ -40,6 +40,8 @@ let load_vm_config __context conf =
     [
       (Xapi_globs.cpu_info_vendor_key, "AuthenticAMD")
     ; (Xapi_globs.cpu_info_features_key, "deadbeef-deadbeef")
+    ; (Xapi_globs.cpu_info_policy_pv_key, "some-pv-policy-here")
+    ; (Xapi_globs.cpu_info_policy_hvm_key, "some-hvm-policy-here")
     ]
   in
   Db.VM.set_last_boot_CPU_flags ~__context ~self ~value:flags ;

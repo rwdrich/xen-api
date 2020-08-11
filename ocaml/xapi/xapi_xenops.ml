@@ -1190,20 +1190,27 @@ module MD = struct
       else
         platformdata
     in
-    let pci_msitranslate = true in
-    (* default setting *)
+    let policy_key = ref Xapi_globs.cpu_info_policy_pv_key in
     let platformdata =
-      if not (List.mem_assoc Vm_platform.policy platformdata) then
+      if not (List.mem_assoc Vm_platform.policy_pv platformdata || List.mem_assoc Vm_platform.policy_hvm platformdata) then
         let policy =
-          if List.mem_assoc Xapi_globs.cpu_info_policy_key vm.API.vM_last_boot_CPU_flags then
-            List.assoc Xapi_globs.cpu_info_policy_key vm.API.vM_last_boot_CPU_flags
+          if List.mem_assoc Xapi_globs.cpu_info_policy_pv_key vm.API.vM_last_boot_CPU_flags then
+            List.assoc Xapi_globs.cpu_info_policy_pv_key vm.API.vM_last_boot_CPU_flags
           else
-            failwith "VM's CPU policy not initialised"
+              if List.mem_assoc Xapi_globs.cpu_info_policy_hvm_key vm.API.vM_last_boot_CPU_flags then
+                begin
+                  policy_key := Xapi_globs.cpu_info_policy_hvm_key;
+                  List.assoc Xapi_globs.cpu_info_policy_hvm_key vm.API.vM_last_boot_CPU_flags
+                end
+              else
+                failwith "VM's CPU policy not initialised"
         in
-        (Vm_platform.policy, policy) :: platformdata
+        (!policy_key, policy) :: platformdata
       else
         platformdata
     in
+    let pci_msitranslate = true in
+    (* default setting *)
     (* CA-55754: allow VM.other_config:msitranslate to override the bus-wide setting *)
     let pci_msitranslate =
       if List.mem_assoc "msitranslate" vm.API.vM_other_config then
