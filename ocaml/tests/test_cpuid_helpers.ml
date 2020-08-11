@@ -197,13 +197,13 @@ module Accessors = Generic.MakeStateless (struct
        "features_pv", "00000001-00000002-00000003";
        "features_hvm", "0000000a-0000000b-0000000c";
        "policy_pv", "";
-       "polivy_hvm", ""],
+       "policy_hvm", ""],
       ("Intel", 1, 1, [| 1L; 2L; 3L |], [| 0xaL; 0xbL; 0xcL |], "", "");
       ["vendor", "Amd"; "socket_count", "6"; "cpu_count", "24";
        "features_pv", "00000001";
        "features_hvm", "";
        "policy_pv", "";
-       "polivy_hvm", ""],
+       "policy_hvm", ""],
       ("Amd", 6, 24, [| 1L |], [| |], "", "");
     ]
 end)
@@ -263,23 +263,23 @@ module Modifiers = Generic.MakeStateless (struct
       |> setf cpu_count (getf cpu_count record)
       |> setf features_pv (getf features_pv record)
       |> setf features_hvm (getf features_hvm record)
-      |> setf policy_pv (getf policy_pv record)
       |> setf policy_hvm (getf policy_hvm record)
+      |> setf policy_pv (getf policy_pv record)
       |> List.sort compare
 
     let tests = `QuickAndAutoDocumented [
       ["cpu_count", "1";
        "features_hvm", "0000000a-0000000b-0000000c";
        "features_pv", "00000001-00000002-00000003";
-       "policy_pv", "";
        "policy_hvm", "";
+       "policy_pv", "";
        "socket_count", "1";
        "vendor", "Intel"],
       ["cpu_count", "1";
        "features_hvm", "0000000a-0000000b-0000000c";
        "features_pv", "00000001-00000002-00000003";
-       "policy_pv", "";
        "policy_hvm", "";
+       "policy_pv", "";
        "socket_count", "1";
        "vendor", "Intel"];
     ]
